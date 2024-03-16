@@ -24,4 +24,4 @@ arcade.start_render()
 block_liste.draw()
 arcade.finish_render()
 
-arcade.run()
+arcade.run()###
