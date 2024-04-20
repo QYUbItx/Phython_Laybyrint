@@ -1,5 +1,6 @@
 #ganzes arcade window zeug
 import arcade
+import arcade.key
 
 
 
@@ -52,6 +53,7 @@ class Labyrinth(arcade.Window):
         self.block_liste = arcade.SpriteList() #das wird gedrawd
         self.entity_liste = arcade.SpriteList()
 
+        
 
         #Linien der Ränder
         self.blockLine(0, 0, 16, True)
@@ -86,18 +88,45 @@ class Labyrinth(arcade.Window):
         self.createBlock(100, 50, "block")
 
 
-        player = arcade.Sprite("texturen/player.png")
+        player = arcade.Sprite("texturen/player.png", 0.8)
         player.center_x = 325
         player.center_y = 225
-        player.height = 50
-        player.width = 50
         self.entity_liste.append(player)
+        self.player = player
 
-    def on_key_press(self, char, modifiers):
-        if char.w:
-            print("w")
+        self.physics = arcade.PhysicsEngineSimple(self.player, self.block_liste)
+
+
+    
+    def on_key_press(self, char: int, modifiers: int):
+        if char == arcade.key.W:
+            self.player.change_y = 2.4
+        elif char == arcade.key.A:
+            self.player.change_x = -2.4
+        elif char == arcade.key.S:
+            self.player.change_y = -2.4
+        elif char == arcade.key.D:
+            self.player.change_x = 2.4
+            
+    #20.4. hier das release-check-ding machen
+    def on_key_release(self, char: int, modifiers: int):
+        if char == arcade.key.W:
+            self.player.change_y = 0
+            self.on_key_press()
+        elif char == arcade.key.A:
+            self.player.change_x = 0
+            self.on_key_press()
+        elif char == arcade.key.S:
+            self.player.change_y = 0
+            self.on_key_press()
+        elif char == arcade.key.D:
+            self.player.change_x = 0
+            self.on_key_press()
+            
         
-
+    def on_update(self, delta_time):
+        self.physics.update()
+        self.player.update()
 
     def on_draw(self):
         self.clear()
