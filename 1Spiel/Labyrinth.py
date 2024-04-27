@@ -18,18 +18,18 @@ class Labyrinth(arcade.Window):
 
     def blockLine(self, x, y, length, horizontal):
         pointer = self.Pointer(x, y)
-        self.createBlock(pointer.x, pointer.y, "block")
+        self.createSprite(pointer.x, pointer.y, "block", True)
         length -= 1
         i = 0
         if horizontal:  
             while i < length:
                 pointer.x += 50
-                self.createBlock(pointer.x, pointer.y, "block")
+                self.createSprite(pointer.x, pointer.y, "block", True)
                 i += 1
         else:
             while i < length:
                 pointer.y += 50
-                self.createBlock(pointer.x, pointer.y, "block") 
+                self.createSprite(pointer.x, pointer.y, "block", True)
                 i += 1
 
 
@@ -38,11 +38,14 @@ class Labyrinth(arcade.Window):
         return int + 25
 
     #erstellt einen block und appendet ihn zur block liste
-    def createBlock(self, x, y, type):
-        block = arcade.Sprite("texturen/" + type + ".png")
-        block.center_x = self.readebleBlockKor(x)
-        block.center_y = self.readebleBlockKor(y)
-        self.block_liste.append(block)
+    def createSprite(self, x, y, type, colisions):
+        sprite = arcade.Sprite("texturen/" + type + ".png")
+        sprite.center_x = self.readebleBlockKor(x)
+        sprite.center_y = self.readebleBlockKor(y)
+        if colisions:
+            self.block_liste.append(sprite)
+        else:
+            self.entity_liste.append(sprite)
 
     
 
@@ -52,7 +55,7 @@ class Labyrinth(arcade.Window):
 
         self.block_liste = arcade.SpriteList() #das wird gedrawd
         self.entity_liste = arcade.SpriteList()
-
+        self.hasThePlayerTheKeyQuestionMark = False
         
 
         #Linien der Ränder
@@ -70,25 +73,33 @@ class Labyrinth(arcade.Window):
         self.blockLine(550, 450, 2, False)
         self.blockLine(500, 350, 3, True)
         self.blockLine(650, 200, 6, False)
-        self.blockLine(500, 150, 6, True)
-        self.blockLine(400, 50, 5, False)
+        self.blockLine(500, 150, 4, True)
+        self.blockLine(400, 100, 5, False)
         self.blockLine(150, 150, 5, True)
         self.blockLine(100, 150, 2, False)
 
         #einzelne Blöcke
-        self.createBlock(250, 400, "block")
-        self.createBlock(300, 250, "block")
-        self.createBlock(200, 200, "block")
-        self.createBlock(200, 100, "block")
-        self.createBlock(300, 50, "block")
-        self.createBlock(550, 250, "block")
-        self.createBlock(450, 250, "block")
-        self.createBlock(500, 100, "block")
-        self.createBlock(600, 50, "block")
-        self.createBlock(100, 50, "block")
+        self.createSprite(250, 400, "block", True)
+        self.createSprite(300, 250, "block", True)
+        self.createSprite(200, 200, "block", True)
+        self.createSprite(200, 100, "block", True)
+        self.createSprite(300, 50, "block", True)
+        self.createSprite(550, 250, "block", True)
+        self.createSprite(450, 250, "block", True)
+        self.createSprite(500, 100, "block", True)
+        self.createSprite(600, 50, "block", True)
+        self.createSprite(100, 50, "block", True)
+
+        #andere Blöcke
+        self.createSprite(400, 50, "fakeblock", False)
+        self.createSprite(700, 150, "fakeblock", False)
+        self.createSprite(600, 100, "lockblock", True)
+
+        #andere Sprites
+        self.createSprite(350, 50, "key", False)
 
 
-        player = arcade.Sprite("texturen/player.png", 0.8)
+        player = arcade.Sprite("texturen/player.png", 0.75)
         player.center_x = 325
         player.center_y = 225
         self.entity_liste.append(player)
@@ -108,25 +119,33 @@ class Labyrinth(arcade.Window):
         elif char == arcade.key.D:
             self.player.change_x = 2.4
             
-    #20.4. hier das release-check-ding machen
+    #20.4. hier das release-check-ding machen. #27.4. was meinst du?!
     def on_key_release(self, char: int, modifiers: int):
         if char == arcade.key.W:
             self.player.change_y = 0
-            self.on_key_press()
+            #self.on_key_press()
         elif char == arcade.key.A:
             self.player.change_x = 0
-            self.on_key_press()
+            #self.on_key_press()
         elif char == arcade.key.S:
             self.player.change_y = 0
-            self.on_key_press()
+            #self.on_key_press()
         elif char == arcade.key.D:
             self.player.change_x = 0
-            self.on_key_press()
+            #self.on_key_press()
             
         
     def on_update(self, delta_time):
         self.physics.update()
         self.player.update()
+        if arcade.check_for_collision(self.player, self.entity_liste[-2]):
+            self.hasThePlayerTheKeyQuestionMark = True
+            self.entity_liste.pop(-2)
+            print("a")
+        if self.player.center_x >= 600 and self.player.center_x <= 650 and self.hasThePlayerTheKeyQuestionMark:
+            #and self.player.center_y >= 100 and self.player.center_y <= 150 
+            self.block_liste.pop(0)
+            print("b")
 
     def on_draw(self):
         self.clear()
