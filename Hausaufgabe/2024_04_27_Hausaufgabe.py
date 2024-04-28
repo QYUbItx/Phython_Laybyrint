@@ -5,3 +5,9 @@
 #
 # Hinweis: sprite1 und sprite2 besitzen Attribute center_x und center_y, die ihre x- und y-Positionen angeben.
 # Auf diese kann über sprite1.center_x/sprite1.center_y/sprite2.center_x/sprite2.center_y zugegriffen werden.
+
+import math
+
+def abstand(sprite1, sprite2):
+    d = math.sqrt((sprite1.center_x - sprite2.center_x) ** 2 + (sprite1.center_y - sprite2.center_y) ** 2)
+    return d
