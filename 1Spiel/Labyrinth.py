@@ -33,28 +33,28 @@ class Labyrinth(arcade.Window):
                 i += 1
 
 
+    def createSprite(self, x, y, texture, collisions, size = 1):
+        sprite = arcade.Sprite("texturen/" + texture + ".png", size)
+        sprite.center_x = x
+        sprite.center_y = y
+        if collisions:
+            self.collision_list.append(sprite)
+        self.sprite_list.append(sprite)
+
+
+
     #macht Sachen einfacher
     def readebleBlockKor(self, int):
         return int + 25
-
-    #erstellt einen block und appendet ihn zur block liste
-    def createSprite(self, x, y, type, colisions):
-        sprite = arcade.Sprite("texturen/" + type + ".png")
-        sprite.center_x = self.readebleBlockKor(x)
-        sprite.center_y = self.readebleBlockKor(y)
-        if colisions:
-            self.block_liste.append(sprite)
-        else:
-            self.entity_liste.append(sprite)
-
     
+
 
     def __init__(self):
         super().__init__(800, 600, "Labyrinth")
         arcade.set_background_color(arcade.color.AERO_BLUE)
 
-        self.block_liste = arcade.SpriteList() #das wird gedrawd
-        self.entity_liste = arcade.SpriteList()
+        self.sprite_list = arcade.SpriteList() #das wird gedrawd
+        self.collision_list = arcade.SpriteList()
         self.hasThePlayerTheKeyQuestionMark = False
         
 
@@ -95,17 +95,18 @@ class Labyrinth(arcade.Window):
         self.createSprite(700, 150, "fakeblock", False)
         self.createSprite(600, 100, "lockblock", True)
 
+        #enemys
+
         #andere Sprites
-        self.createSprite(350, 50, "key", False)
+        self.key = self.createSprite(350, 50, "key", False)
 
+        #player init
+        self.player = self.createSprite(325, 225, "player", False, 0.75)
 
-        player = arcade.Sprite("texturen/player.png", 0.75)
-        player.center_x = 325
-        player.center_y = 225
-        self.entity_liste.append(player)
-        self.player = player
+        print(isinstance(self.player, arcade.Sprite))
 
-        self.physics = arcade.PhysicsEngineSimple(self.player, self.block_liste)
+        #pysics engine
+        self.physics = arcade.PhysicsEngineSimple(self.player, self.collision_list)
 
 
     
@@ -138,19 +139,18 @@ class Labyrinth(arcade.Window):
     def on_update(self, delta_time):
         self.physics.update()
         self.player.update()
-        if arcade.check_for_collision(self.player, self.entity_liste[-2]):
+        if arcade.check_for_collision(self.player, self.key):
             self.hasThePlayerTheKeyQuestionMark = True
-            self.entity_liste.pop(-2)
+            self.sprite_list.pop(-2)
             print("a")
-        if self.player.center_x >= 600 and self.player.center_x <= 650 and self.hasThePlayerTheKeyQuestionMark:
-            #and self.player.center_y >= 100 and self.player.center_y <= 150 
-            self.block_liste.pop(0)
+        if self.player.center_x >= 550 and self.player.center_x <= 600 and self.player.center_y <= 150 and self.player.center_y >= 100 and self.hasThePlayerTheKeyQuestionMark:
+            self.block_liste.pop(-1)
+            self.hasThePlayerTheKeyQuestionMark = False
             print("b")
 
     def on_draw(self):
         self.clear()
-        self.block_liste.draw()
-        self.entity_liste.draw()
+        self.sprite_list.draw()
 
 
 
