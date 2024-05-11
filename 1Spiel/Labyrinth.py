@@ -33,13 +33,14 @@ class Labyrinth(arcade.Window):
                 i += 1
 
 
-    def createSprite(self, x, y, texture, collisions, size = 1):
+    def createSprite(self, x, y, texture, collisions, size = 1, invert = True):
         sprite = arcade.Sprite("texturen/" + texture + ".png", size)
-        sprite.center_x = x
-        sprite.center_y = y
+        sprite.center_x = self.readebleBlockKor(x)
+        sprite.center_y = self.readebleBlockKor(y)
         if collisions:
             self.collision_list.append(sprite)
         self.sprite_list.append(sprite)
+        return sprite
 
 
 
@@ -93,7 +94,7 @@ class Labyrinth(arcade.Window):
         #andere Blöcke
         self.createSprite(400, 50, "fakeblock", False)
         self.createSprite(700, 150, "fakeblock", False)
-        self.createSprite(600, 100, "lockblock", True)
+        self.lockblock = self.createSprite(600, 100, "lockblock", True)
 
         #enemys
 
@@ -102,8 +103,6 @@ class Labyrinth(arcade.Window):
 
         #player init
         self.player = self.createSprite(325, 225, "player", False, 0.75)
-
-        print(isinstance(self.player, arcade.Sprite))
 
         #pysics engine
         self.physics = arcade.PhysicsEngineSimple(self.player, self.collision_list)
@@ -139,14 +138,14 @@ class Labyrinth(arcade.Window):
     def on_update(self, delta_time):
         self.physics.update()
         self.player.update()
-        if arcade.check_for_collision(self.player, self.key):
+        if arcade.check_for_collision(self.player, self.key) and not self.hasThePlayerTheKeyQuestionMark:
             self.hasThePlayerTheKeyQuestionMark = True
-            self.sprite_list.pop(-2)
-            print("a")
+            if self.key in self.sprite_list:
+                self.sprite_list.remove(self.key)
         if self.player.center_x >= 550 and self.player.center_x <= 600 and self.player.center_y <= 150 and self.player.center_y >= 100 and self.hasThePlayerTheKeyQuestionMark:
-            self.block_liste.pop(-1)
+            self.sprite_list.remove(self.lockblock)
+            self.collision_list.remove(self.lockblock)
             self.hasThePlayerTheKeyQuestionMark = False
-            print("b")
 
     def on_draw(self):
         self.clear()
