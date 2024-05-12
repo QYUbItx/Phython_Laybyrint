@@ -7,17 +7,12 @@ römische_ziffern = ["I", "V", "X", "L", "C", "D", "M"]
 
 def römisch_zu_dezimal(römiische_zahl: str) -> int:
     dezimal_zahl = 0
-    last_index = 0
-
-    if not römiische_zahl[0] == "I":
-        dezimal_zahl += 2
-        print("+2.0")
-
+    last_index = 10000000000000000000000000
     for ziffer in list(römiische_zahl):
         index = römische_ziffern.index(ziffer)
+
         dezimal_wert = getdezimalValue(index)
         dezimal_zahl += dezimal_wert
-
         if index > last_index:
             dezimal_zahl -= getdezimalValue(last_index) * 2
 
