@@ -25,3 +25,20 @@ def getdezimalValue(index:int) -> int:
     else:
         return_value = 10 ** ((index - 1) / 2) * 5
     return return_value
+
+
+
+#lösung
+def römisch_zu_dezimal_lösung(römische_zahl):
+    regeln = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
+    ergebnis = 0
+
+    for i in range(0, len(römische_zahl)):
+        ziffer = römische_zahl[i]
+
+        if(i < len(römische_zahl) - 1 and ziffer < regeln[römische_zahl[i + 1]]):
+            ergebnis -= regeln[ziffer]
+        else:
+            ergebnis += regeln[ziffer]
+
+    return ergebnis

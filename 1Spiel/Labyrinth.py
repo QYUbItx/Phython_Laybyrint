@@ -1,7 +1,7 @@
 #ganzes arcade window zeug
 import arcade
 import arcade.key
-
+import random
 
 
 
@@ -33,7 +33,7 @@ class Labyrinth(arcade.Window):
                 i += 1
 
 
-    def createSprite(self, x, y, texture, collisions, size = 1, invert = True):
+    def createSprite(self, x, y, texture, collisions, size = 1):
         sprite = arcade.Sprite("texturen/" + texture + ".png", size)
         sprite.center_x = self.readebleBlockKor(x)
         sprite.center_y = self.readebleBlockKor(y)
@@ -42,6 +42,18 @@ class Labyrinth(arcade.Window):
         self.sprite_list.append(sprite)
         return sprite
 
+    
+    def createEnemy(self, x, y, texture):
+        enemy = self.createSprite(x, y, texture, False)
+        self.enemy_list.append(enemy)
+        return enemy
+    
+
+    def goTo(self, enemy:arcade.Sprite, x, y):
+        dx = enemy.center_x - x
+        dy = enemy.center_y - y
+        enemy.change_x = dx
+        enemy.change_y = dy
 
 
     #macht Sachen einfacher
@@ -56,6 +68,7 @@ class Labyrinth(arcade.Window):
 
         self.sprite_list = arcade.SpriteList() #das wird gedrawd
         self.collision_list = arcade.SpriteList()
+        self.enemy_list = arcade.SpriteList()
         self.hasThePlayerTheKeyQuestionMark = False
         
 
@@ -97,12 +110,15 @@ class Labyrinth(arcade.Window):
         self.lockblock = self.createSprite(600, 100, "lockblock", True)
 
         #enemys
+        self.enemy = self.Enemy(500, 500, "enemy")
 
         #andere Sprites
         self.key = self.createSprite(350, 50, "key", False)
 
         #player init
-        self.player = self.createSprite(325, 225, "player", False, 0.75)
+        self.playerSpawnList = [[175, 425], [325, 225]]
+        spawn_pos = self.playerSpawnList[random.randint(0, 1)]
+        self.player = self.createSprite(spawn_pos[0], spawn_pos[1], "player", False, 0.75)
 
         #pysics engine
         self.physics = arcade.PhysicsEngineSimple(self.player, self.collision_list)
@@ -138,6 +154,7 @@ class Labyrinth(arcade.Window):
     def on_update(self, delta_time):
         self.physics.update()
         self.player.update()
+        self.enemy.update()
         if arcade.check_for_collision(self.player, self.key) and not self.hasThePlayerTheKeyQuestionMark:
             self.hasThePlayerTheKeyQuestionMark = True
             if self.key in self.sprite_list:
