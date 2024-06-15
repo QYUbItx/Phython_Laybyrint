@@ -1,13 +1,52 @@
-#ganzes arcade window zeug
 import arcade
 import arcade.key
 import random
-
+import json
 
 
 class Labyrinth(arcade.Window):
 
-    #ist dafür da, um Linien aus Blöcken zu machen
+    #läd die daten aus einem level json file
+    def load_level_data(self, level: int):
+        file = open(f"level{level}.json")
+        return json.load(file)
+    
+    def level_up(self):
+        self.level += 1
+        self.clear()
+        self.level_data = self.load_level_data(self.level)
+
+    def load_level(self):
+        #create board? how do you call it in english? #TODO
+        self.blockLine(0, 0, 16, True)
+        self.blockLine(0, 550, 16, True)
+        self.blockLine(0, 0, 12, False)
+        self.blockLine(750, 0, 12, False)
+
+        for item in self.level_data.blocks:
+            self.createSprite(item.x, item.y, "block", True)
+
+        for item in self.level_data.lines:
+            self.blockLine(item.x, item.y, item.length, item.horizontal)
+
+        for item in self.level_data.fakeblocks:
+            self.createSprite(item.x, item.y, "fakeblock", False)
+
+        for item in self.level_data.locks:
+            self.lockblock = self.createSprite(item.x, item.y, "lockblock", True)
+
+        for item in self.level_data.keys:
+            self.key = self.createSprite(item.x, item.y, "key", False)
+
+        #create entities
+        spawn_pos = self.level_data.spawns[random.randint(0, self.level_data.spawns.__len__())]
+        self.player = self.createSprite(spawn_pos[0], spawn_pos[1], "player", False)
+
+        for item in self.level_data.enemys:
+            self.enemy = self.createEnemy(item.x, item.y, "enemy")
+
+
+    #funktionen um effectiver sprites zu erstellen
     class Pointer:
         x = 0
         y = 0
@@ -66,17 +105,14 @@ class Labyrinth(arcade.Window):
         super().__init__(800, 600, "Labyrinth")
         arcade.set_background_color(arcade.color.AERO_BLUE)
 
+        self.level = 1
+        self.level_data = self.load_level_data(self.level)
+
         self.sprite_list = arcade.SpriteList() #das wird gedrawd
         self.collision_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
         self.hasThePlayerTheKeyQuestionMark = False
         
-
-        #Linien der Ränder
-        self.blockLine(0, 0, 16, True)
-        self.blockLine(0, 550, 16, True)
-        self.blockLine(0, 0, 12, False)
-        self.blockLine(750, 0, 12, False)
 
         #andere Linien
         self.blockLine(100, 450, 4, True)
@@ -110,7 +146,7 @@ class Labyrinth(arcade.Window):
         self.lockblock = self.createSprite(600, 100, "lockblock", True)
 
         #enemys
-        self.enemy = self.Enemy(500, 500, "enemy")
+        self.enemy = self.createEnemy(100, 100, "enemy")
 
         #andere Sprites
         self.key = self.createSprite(350, 50, "key", False)

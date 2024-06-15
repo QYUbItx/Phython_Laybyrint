@@ -1,0 +1,47 @@
+{
+    "lines": [
+        {
+            "x": 0,
+            "y": 0,
+            "length": 0,
+            "horizontal": false
+        }
+    ],
+    "blocks": [
+        {
+            "x": 0,
+            "y": 0
+        }
+    ],
+    "fakeblocks": [
+        {
+            "x": 0,
+            "y": 0
+        }
+    ],
+    "locks": [
+        {
+            "x": 0,
+            "y": 0
+        }
+    ],
+    "keys": [
+        {
+            "x": 0,
+            "y": 0
+        }
+    ],
+    "spawns": [
+        {
+            "x": 0,
+            "y": 0
+        }
+    ],
+    "enemys": [
+        {
+            "x": 0,
+            "y": 0,
+            "type": "normal"
+        }
+    ]
+}
