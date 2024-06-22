@@ -9,7 +9,9 @@ class Labyrinth(arcade.Window):
     #läd die daten aus einem level json file
     def load_level_data(self, level: int):
         file = open(f"level{level}.json")
-        return json.load(file)
+        data = json.load(file)
+        file.close()
+        return data
     
     def level_up(self):
         self.level += 1
@@ -23,27 +25,27 @@ class Labyrinth(arcade.Window):
         self.blockLine(0, 0, 12, False)
         self.blockLine(750, 0, 12, False)
 
-        for item in self.level_data.blocks:
-            self.createSprite(item.x, item.y, "block", True)
+        for item in self.level_data["blocks"]:
+            self.createSprite(item["x"], item["y"], "block", True)
 
-        for item in self.level_data.lines:
-            self.blockLine(item.x, item.y, item.length, item.horizontal)
+        for item in self.level_data["lines"]:
+            self.blockLine(item["x"], item["y"], item["length"], item["horizontal"])
 
-        for item in self.level_data.fakeblocks:
-            self.createSprite(item.x, item.y, "fakeblock", False)
+        for item in self.level_data["fakeblocks"]:
+            self.createSprite(item["x"], item["y"], "fakeblock", False)
 
-        for item in self.level_data.locks:
-            self.lockblock = self.createSprite(item.x, item.y, "lockblock", True)
+        for item in self.level_data["locks"]:
+            self.lockblock = self.createSprite(item["x"], item["y"], "lockblock", True)
 
-        for item in self.level_data.keys:
-            self.key = self.createSprite(item.x, item.y, "key", False)
+        for item in self.level_data["keys"]:
+            self.key = self.createSprite(item["x"], item["y"], "key", False)
 
         #create entities
-        spawn_pos = self.level_data.spawns[random.randint(0, self.level_data.spawns.__len__())]
-        self.player = self.createSprite(spawn_pos[0], spawn_pos[1], "player", False)
+        spawn_pos = self.level_data["spawns"][random.randint(0, self.level_data["spawns"].__len__() - 1)]
+        self.player = self.createSprite(spawn_pos["x"], spawn_pos["y"], "player", False, 0.75)
 
-        for item in self.level_data.enemys:
-            self.enemy = self.createEnemy(item.x, item.y, "enemy")
+        for item in self.level_data["enemys"]:
+            self.enemy = self.createEnemy(item["x"], item["y"], "enemy")
 
 
     #funktionen um effectiver sprites zu erstellen
@@ -112,49 +114,9 @@ class Labyrinth(arcade.Window):
         self.collision_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
         self.hasThePlayerTheKeyQuestionMark = False
+        self.play_time = 0
         
-
-        #andere Linien
-        self.blockLine(100, 450, 4, True)
-        self.blockLine(100, 300, 3, False)
-        self.blockLine(350, 350, 3, False)
-        self.blockLine(200, 300, 5, True)
-        self.blockLine(400, 450, 2, True)
-        self.blockLine(550, 450, 2, False)
-        self.blockLine(500, 350, 3, True)
-        self.blockLine(650, 200, 6, False)
-        self.blockLine(500, 150, 4, True)
-        self.blockLine(400, 100, 5, False)
-        self.blockLine(150, 150, 5, True)
-        self.blockLine(100, 150, 2, False)
-
-        #einzelne Blöcke
-        self.createSprite(250, 400, "block", True)
-        self.createSprite(300, 250, "block", True)
-        self.createSprite(200, 200, "block", True)
-        self.createSprite(200, 100, "block", True)
-        self.createSprite(300, 50, "block", True)
-        self.createSprite(550, 250, "block", True)
-        self.createSprite(450, 250, "block", True)
-        self.createSprite(500, 100, "block", True)
-        self.createSprite(600, 50, "block", True)
-        self.createSprite(100, 50, "block", True)
-
-        #andere Blöcke
-        self.createSprite(400, 50, "fakeblock", False)
-        self.createSprite(700, 150, "fakeblock", False)
-        self.lockblock = self.createSprite(600, 100, "lockblock", True)
-
-        #enemys
-        self.enemy = self.createEnemy(100, 100, "enemy")
-
-        #andere Sprites
-        self.key = self.createSprite(350, 50, "key", False)
-
-        #player init
-        self.playerSpawnList = [[175, 425], [325, 225]]
-        spawn_pos = self.playerSpawnList[random.randint(0, 1)]
-        self.player = self.createSprite(spawn_pos[0], spawn_pos[1], "player", False, 0.75)
+        self.load_level()
 
         #pysics engine
         self.physics = arcade.PhysicsEngineSimple(self.player, self.collision_list)
@@ -188,9 +150,12 @@ class Labyrinth(arcade.Window):
             
         
     def on_update(self, delta_time):
+        #update physics & entities
         self.physics.update()
         self.player.update()
         self.enemy.update()
+
+        #check for events
         if arcade.check_for_collision(self.player, self.key) and not self.hasThePlayerTheKeyQuestionMark:
             self.hasThePlayerTheKeyQuestionMark = True
             if self.key in self.sprite_list:
@@ -200,9 +165,14 @@ class Labyrinth(arcade.Window):
             self.collision_list.remove(self.lockblock)
             self.hasThePlayerTheKeyQuestionMark = False
 
+        #update time
+        self.play_time += round(delta_time, 2)
+
     def on_draw(self):
         self.clear()
         self.sprite_list.draw()
+        splited_time = str(self.play_time).split(".")
+        arcade.draw_text(splited_time[0] + "." + splited_time[1][0:2], 400, 10)
 
 
 
