@@ -105,15 +105,16 @@ class Labyrinth(arcade.Window):
 
     def __init__(self):
         super().__init__(800, 600, "Labyrinth")
-        arcade.set_background_color(arcade.color.AERO_BLUE)
+        arcade.set_background_color(arcade.color.BLACK_OLIVE)
 
         self.level = 1
         self.level_data = self.load_level_data(self.level)
 
+    
         self.sprite_list = arcade.SpriteList() #das wird gedrawd
         self.collision_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
-        self.hasThePlayerTheKeyQuestionMark = False
+        self.hasKey = False
         self.play_time = 0
         
         self.load_level()
@@ -156,14 +157,19 @@ class Labyrinth(arcade.Window):
         self.enemy.update()
 
         #check for events
-        if arcade.check_for_collision(self.player, self.key) and not self.hasThePlayerTheKeyQuestionMark:
-            self.hasThePlayerTheKeyQuestionMark = True
+        if arcade.check_for_collision(self.player, self.key) and not self.hasKey:
+            self.hasKey = True
             if self.key in self.sprite_list:
                 self.sprite_list.remove(self.key)
-        if self.player.center_x >= 550 and self.player.center_x <= 600 and self.player.center_y <= 150 and self.player.center_y >= 100 and self.hasThePlayerTheKeyQuestionMark:
+
+        if self.player.center_x >= 550 and self.player.center_x <= 600 and self.player.center_y <= 150 and self.player.center_y >= 100 and self.hasKey:
             self.sprite_list.remove(self.lockblock)
             self.collision_list.remove(self.lockblock)
-            self.hasThePlayerTheKeyQuestionMark = False
+            self.hasKey = False
+
+        for enemy in self.enemy_list:
+            if arcade.check_for_collision(self.player, enemy):
+                print("stop")
 
         #update time
         self.play_time += round(delta_time, 2)
