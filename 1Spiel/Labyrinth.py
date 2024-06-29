@@ -25,20 +25,43 @@ class Labyrinth(arcade.Window):
         self.blockLine(0, 0, 12, False)
         self.blockLine(750, 0, 12, False)
 
-        for item in self.level_data["blocks"]:
-            self.createSprite(item["x"], item["y"], "block", True)
+        spawn_pos = []
 
-        for item in self.level_data["lines"]:
-            self.blockLine(item["x"], item["y"], item["length"], item["horizontal"])
+        for i in range(self.level_data["cells"].__len__()):
+            column = self.level_data["cells"][i]
 
-        for item in self.level_data["fakeblocks"]:
-            self.createSprite(item["x"], item["y"], "fakeblock", False)
+            for j in range(column.__len__()):
+                cell = column[j]
 
-        for item in self.level_data["locks"]:
-            self.lockblock = self.createSprite(item["x"], item["y"], "lockblock", True)
+                if cell == 0:
+                    continue
+                elif cell == 1:
+                    self.createSprite(j * 50, i * 50, "block", True)
+                elif cell == 2:
+                    self.createSprite(j * 50, i * 50, "fakeblock", False)
+                elif cell == 3:
+                    self.key = self.createSprite(j * 50, i * 50, "key", False)
+                elif cell == 4:
+                    self.lockblock = self.createSprite(j * 50, i * 50, "lockblock", True)
+                elif cell == 5:
+                    spawn_pos.x = j * 50
+                    spawn_pos.y = i * 50
 
-        for item in self.level_data["keys"]:
-            self.key = self.createSprite(item["x"], item["y"], "key", False)
+
+        #for item in self.level_data["blocks"]:
+        #    self.createSprite(item["x"], item["y"], "block", True)
+        #
+        #for item in self.level_data["lines"]:
+        #    self.blockLine(item["x"], item["y"], item["length"], item["horizontal"])
+        #
+        #for item in self.level_data["fakeblocks"]:
+        #    self.createSprite(item["x"], item["y"], "fakeblock", False)
+        #
+        #for item in self.level_data["locks"]:
+        #    self.lockblock = self.createSprite(item["x"], item["y"], "lockblock", True)
+        #
+        #for item in self.level_data["keys"]:
+        #    self.key = self.createSprite(item["x"], item["y"], "key", False)
 
         #create entities
         spawn_pos = self.level_data["spawns"][random.randint(0, self.level_data["spawns"].__len__() - 1)]
