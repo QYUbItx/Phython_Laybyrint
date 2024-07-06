@@ -7,24 +7,30 @@ import json
 class Labyrinth(arcade.Window):
 
     #läd die daten aus einem level json file
-    def load_level_data(self, level: int):
-        file = open(f"level{level}.json")
+    def load_game_data(self):
+        file = open("game_data.json")
         data = json.load(file)
         file.close()
         return data
     
-    def level_up(self):
-        self.level += 1
+    def level_set_up(self):
+        self.sprite_list = arcade.SpriteList()
+        self.collision_list = arcade.SpriteList()
+        self.enemy_list = arcade.SpriteList()
+
+        self.hasKey = False
+
+        self.key = 0
+        self.lockblock = 0
+        self.goal = 0#
+
         self.clear()
-        self.level_data = self.load_level_data(self.level)
+        self.level_data = self.game_data[self.level - 1]
+        self.board = self.level_data["cells"]
+        self.load_level()
 
     def load_level(self):
         #create board? how do you call it in english? #TODO
-        self.blockLine(0, 0, 16, True)
-        self.blockLine(0, 550, 16, True)
-        self.blockLine(0, 0, 12, False)
-        self.blockLine(750, 0, 12, False)
-
         spwans = []
 
         for i in range(self.board.__len__()):
@@ -35,75 +41,37 @@ class Labyrinth(arcade.Window):
 
                 if cell == 0:
                     continue
-                elif cell == 1:
-                    self.createSprite(j * 50, i * 50, "block", True)
+
+                x = j * 50
+                y = (self.board.__len__() - 1 - i) * 50
+
+                if cell == 1:
+                    self.createSprite(x, y, "block", True)
                 elif cell == 2:
-                    self.createSprite(j * 50, i * 50, "fakeblock", False)
+                    self.createSprite(x, y, "fakeblock", False)
                 elif cell == 3:
-                    self.key = self.createSprite(j * 50, i * 50, "key", False)
+                    self.key = self.createSprite(x, y, "key", False)
                 elif cell == 4:
-                    self.lockblock = self.createSprite(j * 50, i * 50, "lockblock", True)
+                    self.lockblock = self.createSprite(x, y, "lockblock", True)
                 elif cell == 5:
                     spwan = {
                         "x": j * 50,
                         "y": i * 50
                     }
-
                     spwans.append(spwan)
                 elif cell == 6:
-                    self.createEnemy(j * 50, i * 50, "enemy")
-
-
-        #for item in self.level_data["blocks"]:
-        #    self.createSprite(item["x"], item["y"], "block", True)
-        #
-        #for item in self.level_data["lines"]:
-        #    self.blockLine(item["x"], item["y"], item["length"], item["horizontal"])
-        #
-        #for item in self.level_data["fakeblocks"]:
-        #    self.createSprite(item["x"], item["y"], "fakeblock", False)
-        #
-        #for item in self.level_data["locks"]:
-        #    self.lockblock = self.createSprite(item["x"], item["y"], "lockblock", True)
-        #
-        #for item in self.level_data["keys"]:
-        #    self.key = self.createSprite(item["x"], item["y"], "key", False)
-
-        #create entities
+                    self.createEnemy(x, y, "enemy")
+                elif cell == 7:
+                    self.goal = {
+                        "x": x,
+                        "y": y
+                    }
         
         spawn_pos = spwans[random.randint(0, spwans.__len__() - 1)]
         self.player = self.createSprite(spawn_pos["x"], spawn_pos["y"], "player", False, 0.75)
 
-        #for item in self.level_data["enemys"]:
-        #    self.enemy = self.createEnemy(item["x"], item["y"], "enemy")
-
 
     #funktionen um effectiver sprites zu erstellen
-    class Pointer:
-        x = 0
-        y = 0
-    
-        def __init__(self, x, y):
-            self.x = x
-            self.y = y
-    
-    def blockLine(self, x, y, length, horizontal):
-        pointer = self.Pointer(x, y)
-        self.createSprite(pointer.x, pointer.y, "block", True)
-        length -= 1
-        i = 0
-        if horizontal:  
-            while i < length:
-                pointer.x += 50
-                self.createSprite(pointer.x, pointer.y, "block", True)
-                i += 1
-        else:
-            while i < length:
-                pointer.y += 50
-                self.createSprite(pointer.x, pointer.y, "block", True)
-                i += 1
-
-
     def createSprite(self, x, y, texture, collisions, size = 1):
         sprite = arcade.Sprite(f"texturen/{texture}.png", size)
         sprite.center_x = x + 25
@@ -132,16 +100,11 @@ class Labyrinth(arcade.Window):
         arcade.set_background_color(arcade.color.BLACK_OLIVE)
 
         self.level = 1
-        self.level_data = self.load_level_data(self.level)
-    
-        self.sprite_list = arcade.SpriteList() #das wird gedrawd
-        self.collision_list = arcade.SpriteList()
-        self.enemy_list = arcade.SpriteList()
-        self.hasKey = False
-        self.play_time = 0
+        self.game_data = self.load_game_data()
+
+        self.level_set_up()
         
-        self.board = self.level_data["cells"]
-        self.load_level()
+        self.play_time = 0
 
         #pysics engine
         self.physics = arcade.PhysicsEngineSimple(self.player, self.collision_list)
@@ -181,19 +144,23 @@ class Labyrinth(arcade.Window):
         #self.enemy.update()
 
         #check for events
-        if arcade.check_for_collision(self.player, self.key) and not self.hasKey:
+        if self.key and not self.hasKey and arcade.check_for_collision(self.player, self.key):
             self.hasKey = True
             if self.key in self.sprite_list:
                 self.sprite_list.remove(self.key)
 
-        if self.player.center_x >= 550 and self.player.center_x <= 600 and self.player.center_y <= 150 and self.player.center_y >= 100 and self.hasKey:
+        if self.lockblock and self.player.center_x >= 550 and self.player.center_x <= 600 and self.player.center_y <= 150 and self.player.center_y >= 100 and self.hasKey:#TODO das hier allgemeiner machen
             self.sprite_list.remove(self.lockblock)
             self.collision_list.remove(self.lockblock)
             self.hasKey = False
 
         for enemy in self.enemy_list:
             if arcade.check_for_collision(self.player, enemy):
-                print("stop") #TODO end game
+                print("stop") #TODO game over
+
+        if self.player.center_x >= self.goal["x"] and self.player.center_x >= self.goal["y"] and self.player.center_y <= self.goal["x"] + 50 and self.player.center_y <= self.goal["y"] + 50:
+            self.level += 1
+            self.level_set_up()
 
         #update time
         self.play_time += round(delta_time, 2)
