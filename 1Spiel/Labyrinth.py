@@ -25,10 +25,10 @@ class Labyrinth(arcade.Window):
         self.blockLine(0, 0, 12, False)
         self.blockLine(750, 0, 12, False)
 
-        spawn_pos = []
+        spwans = []
 
-        for i in range(self.level_data["cells"].__len__()):
-            column = self.level_data["cells"][i]
+        for i in range(self.board.__len__()):
+            column = self.board[i]
 
             for j in range(column.__len__()):
                 cell = column[j]
@@ -44,8 +44,14 @@ class Labyrinth(arcade.Window):
                 elif cell == 4:
                     self.lockblock = self.createSprite(j * 50, i * 50, "lockblock", True)
                 elif cell == 5:
-                    spawn_pos.x = j * 50
-                    spawn_pos.y = i * 50
+                    spwan = {
+                        "x": j * 50,
+                        "y": i * 50
+                    }
+
+                    spwans.append(spwan)
+                elif cell == 6:
+                    self.createEnemy(j * 50, i * 50, "enemy")
 
 
         #for item in self.level_data["blocks"]:
@@ -64,22 +70,23 @@ class Labyrinth(arcade.Window):
         #    self.key = self.createSprite(item["x"], item["y"], "key", False)
 
         #create entities
-        spawn_pos = self.level_data["spawns"][random.randint(0, self.level_data["spawns"].__len__() - 1)]
+        
+        spawn_pos = spwans[random.randint(0, spwans.__len__() - 1)]
         self.player = self.createSprite(spawn_pos["x"], spawn_pos["y"], "player", False, 0.75)
 
-        for item in self.level_data["enemys"]:
-            self.enemy = self.createEnemy(item["x"], item["y"], "enemy")
+        #for item in self.level_data["enemys"]:
+        #    self.enemy = self.createEnemy(item["x"], item["y"], "enemy")
 
 
     #funktionen um effectiver sprites zu erstellen
     class Pointer:
         x = 0
         y = 0
-
+    
         def __init__(self, x, y):
             self.x = x
             self.y = y
-
+    
     def blockLine(self, x, y, length, horizontal):
         pointer = self.Pointer(x, y)
         self.createSprite(pointer.x, pointer.y, "block", True)
@@ -98,9 +105,9 @@ class Labyrinth(arcade.Window):
 
 
     def createSprite(self, x, y, texture, collisions, size = 1):
-        sprite = arcade.Sprite("texturen/" + texture + ".png", size)
-        sprite.center_x = self.readebleBlockKor(x)
-        sprite.center_y = self.readebleBlockKor(y)
+        sprite = arcade.Sprite(f"texturen/{texture}.png", size)
+        sprite.center_x = x + 25
+        sprite.center_y = y + 25
         if collisions:
             self.collision_list.append(sprite)
         self.sprite_list.append(sprite)
@@ -120,19 +127,12 @@ class Labyrinth(arcade.Window):
         enemy.change_y = dy
 
 
-    #macht Sachen einfacher
-    def readebleBlockKor(self, int):
-        return int + 25
-    
-
-
     def __init__(self):
         super().__init__(800, 600, "Labyrinth")
         arcade.set_background_color(arcade.color.BLACK_OLIVE)
 
         self.level = 1
         self.level_data = self.load_level_data(self.level)
-
     
         self.sprite_list = arcade.SpriteList() #das wird gedrawd
         self.collision_list = arcade.SpriteList()
@@ -140,6 +140,7 @@ class Labyrinth(arcade.Window):
         self.hasKey = False
         self.play_time = 0
         
+        self.board = self.level_data["cells"]
         self.load_level()
 
         #pysics engine
@@ -177,7 +178,7 @@ class Labyrinth(arcade.Window):
         #update physics & entities
         self.physics.update()
         self.player.update()
-        self.enemy.update()
+        #self.enemy.update()
 
         #check for events
         if arcade.check_for_collision(self.player, self.key) and not self.hasKey:
@@ -192,7 +193,7 @@ class Labyrinth(arcade.Window):
 
         for enemy in self.enemy_list:
             if arcade.check_for_collision(self.player, enemy):
-                print("stop")
+                print("stop") #TODO end game
 
         #update time
         self.play_time += round(delta_time, 2)
@@ -202,7 +203,6 @@ class Labyrinth(arcade.Window):
         self.sprite_list.draw()
         splited_time = str(self.play_time).split(".")
         arcade.draw_text(splited_time[0] + "." + splited_time[1][0:2], 400, 10)
-
 
 
 
