@@ -26,11 +26,14 @@ class Labyrinth(arcade.Window):
 
         self.clear()
         self.level_data = self.game_data[self.level - 1]
+
+        self.block_texture = self.level_data["block_texture"]
+        arcade.set_background_color(arcade.color[self.level_data["board_color"]])
+
         self.board = self.level_data["cells"]
         self.load_level()
 
     def load_level(self):
-        #create board? how do you call it in english? #TODO
         spwans = []
 
         for i in range(self.board.__len__()):
@@ -46,9 +49,9 @@ class Labyrinth(arcade.Window):
                 y = (self.board.__len__() - 1 - i) * 50
 
                 if cell == 1:
-                    self.createSprite(x, y, "block", True)
+                    self.createSprite(x, y, self.block_texture, True)
                 elif cell == 2:
-                    self.createSprite(x, y, "fakeblock", False)
+                    self.createSprite(x, y, self.block_texture, False)
                 elif cell == 3:
                     self.key = self.createSprite(x, y, "key", False)
                 elif cell == 4:
@@ -97,16 +100,14 @@ class Labyrinth(arcade.Window):
 
     def __init__(self):
         super().__init__(800, 600, "Labyrinth")
-        arcade.set_background_color(arcade.color.BLACK_OLIVE)
 
-        self.level = 1
         self.game_data = self.load_game_data()
 
+        self.level = 1
         self.level_set_up()
         
         self.play_time = 0
 
-        #pysics engine
         self.physics = arcade.PhysicsEngineSimple(self.player, self.collision_list)
 
 
@@ -141,7 +142,8 @@ class Labyrinth(arcade.Window):
         #update physics & entities
         self.physics.update()
         self.player.update()
-        #self.enemy.update()
+        for enemy in self.enemy_list:
+            enemy.update()
 
         #check for events
         if self.key and not self.hasKey and arcade.check_for_collision(self.player, self.key):
@@ -164,6 +166,7 @@ class Labyrinth(arcade.Window):
 
         #update time
         self.play_time += round(delta_time, 2)
+        
 
     def on_draw(self):
         self.clear()
