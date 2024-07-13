@@ -1,19 +1,25 @@
 import arcade
+import arcade.color
 import arcade.key
 import random
 import json
+import arcade.key
 
+colors = {
+    "OLIVE": arcade.color.BLACK_OLIVE,
+    "ICE": arcade.color.ICEBERG
+}
 
 class Labyrinth(arcade.Window):
 
-    #läd die daten aus einem level json file
+    #läd die daten aus dem game_data file
     def load_game_data(self):
         file = open("game_data.json")
         data = json.load(file)
         file.close()
         return data
     
-    def level_set_up(self):
+    def level_set_up(self):#! bei level up und restart funktionieren collisions nicht mehr
         self.sprite_list = arcade.SpriteList()
         self.collision_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
@@ -22,13 +28,16 @@ class Labyrinth(arcade.Window):
 
         self.key = 0
         self.lockblock = 0
-        self.goal = 0#
+        self.goal = {
+            "x": 0,
+            "y": 0
+        }
 
         self.clear()
         self.level_data = self.game_data[self.level - 1]
 
         self.block_texture = self.level_data["block_texture"]
-        arcade.set_background_color(arcade.color[self.level_data["board_color"]])
+        arcade.set_background_color(colors[self.level_data["board_color"]])
 
         self.board = self.level_data["cells"]
         self.load_level()
@@ -71,7 +80,7 @@ class Labyrinth(arcade.Window):
                     }
         
         spawn_pos = spwans[random.randint(0, spwans.__len__() - 1)]
-        self.player = self.createSprite(spawn_pos["x"], spawn_pos["y"], "player", False, 0.75)
+        self.player = self.createSprite(spawn_pos["x"], spawn_pos["y"], "player", False, 0.75)#! spawn richtig
 
 
     #funktionen um effectiver sprites zu erstellen
@@ -106,36 +115,69 @@ class Labyrinth(arcade.Window):
         self.level = 1
         self.level_set_up()
         
+        self.keys = {
+            "w": False,
+            "a": False,
+            "s": False,
+            "d": False
+        }
         self.play_time = 0
 
         self.physics = arcade.PhysicsEngineSimple(self.player, self.collision_list)
 
 
-    
+    #hier vielleicht noch checken, ob komplimentärer key getrückt ist und dann auf 0 setzen 
     def on_key_press(self, char: int, modifiers: int):
         if char == arcade.key.W:
+            self.keys["w"] = True
             self.player.change_y = 2.4
-        elif char == arcade.key.A:
-            self.player.change_x = -2.4
-        elif char == arcade.key.S:
+        if char == arcade.key.A:
+            self.keys["a"] = True
+            self.player.change_x = -2.4 
+        if char == arcade.key.S:
+            self.keys["s"] = True
             self.player.change_y = -2.4
-        elif char == arcade.key.D:
+        if char == arcade.key.D:
+            self.keys["d"] = True
             self.player.change_x = 2.4
+
+        if modifiers == arcade.key.MOD_ACCEL and char == arcade.key.R:
+            self.keys = {
+                "w": False,
+                "a": False,
+                "s": False,
+                "d": False
+            }
+            self.play_time = 0
+
+            self.level = 1
+            self.level_set_up()
             
-    #20.4. hier das release-check-ding machen. #27.4. was meinst du?!
     def on_key_release(self, char: int, modifiers: int):
         if char == arcade.key.W:
-            self.player.change_y = 0
-            #self.on_key_press()
+            if self.keys["s"]:
+                self.player.change_y = -2.4
+            else:
+                self.player.change_y = 0
+            self.keys["w"] = False
         elif char == arcade.key.A:
-            self.player.change_x = 0
-            #self.on_key_press()
+            if self.keys["d"]:
+                self.player.change_x = 2.4
+            else:
+                self.player.change_x = 0
+            self.keys["a"] = False
         elif char == arcade.key.S:
-            self.player.change_y = 0
-            #self.on_key_press()
+            if self.keys["w"]:
+                self.player.change_y = 2.4
+            else:
+                self.player.change_y = 0
+            self.keys["s"] = False
         elif char == arcade.key.D:
-            self.player.change_x = 0
-            #self.on_key_press()
+            if self.keys["a"]:
+                self.player.change_x = -2.4
+            else:
+                self.player.change_x = 0
+            self.keys["d"] = False
             
         
     def on_update(self, delta_time):
