@@ -19,7 +19,7 @@ class Labyrinth(arcade.Window):
         file.close()
         return data
     
-    def level_set_up(self):#! bei level up und restart funktionieren collisions nicht mehr
+    def level_set_up(self):
         self.sprite_list = arcade.SpriteList()
         self.collision_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
@@ -67,8 +67,8 @@ class Labyrinth(arcade.Window):
                     self.lockblock = self.createSprite(x, y, "lockblock", True)
                 elif cell == 5:
                     spwan = {
-                        "x": j * 50,
-                        "y": i * 50
+                        "x": x,
+                        "y": y
                     }
                     spwans.append(spwan)
                 elif cell == 6:
@@ -80,7 +80,9 @@ class Labyrinth(arcade.Window):
                     }
         
         spawn_pos = spwans[random.randint(0, spwans.__len__() - 1)]
-        self.player = self.createSprite(spawn_pos["x"], spawn_pos["y"], "player", False, 0.75)#! spawn richtig
+        self.player = self.createSprite(spawn_pos["x"], spawn_pos["y"], "player", False, 0.75)
+
+        self.physics = arcade.PhysicsEngineSimple(self.player, self.collision_list)
 
 
     #funktionen um effectiver sprites zu erstellen
@@ -123,10 +125,8 @@ class Labyrinth(arcade.Window):
         }
         self.play_time = 0
 
-        self.physics = arcade.PhysicsEngineSimple(self.player, self.collision_list)
 
-
-    #hier vielleicht noch checken, ob komplimentärer key getrückt ist und dann auf 0 setzen 
+    #hier vielleicht noch checken, ob komplimentärer key getrückt ist und dann entsprechede geschwidikeit auf 0 setzen 
     def on_key_press(self, char: int, modifiers: int):
         if char == arcade.key.W:
             self.keys["w"] = True
