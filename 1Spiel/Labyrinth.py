@@ -32,6 +32,10 @@ class Labyrinth(arcade.Window):
             "x": 0,
             "y": 0
         }
+        self.lock = {
+            "x": 0,
+            "y": 0
+        }
 
         self.clear()
         self.level_data = self.game_data[self.level - 1]
@@ -78,8 +82,14 @@ class Labyrinth(arcade.Window):
                         "x": x,
                         "y": y
                     }
+                elif cell == 8:
+                    self.lock = {
+                        "x": x,
+                        "y": y
+                    }
         
-        spawn_pos = spwans[random.randint(0, spwans.__len__() - 1)]
+        
+        spawn_pos = spwans[random.randint(0, len(spwans) - 1)]
         self.player = self.createSprite(spawn_pos["x"], spawn_pos["y"], "player", False, 0.75)
 
         self.physics = arcade.PhysicsEngineSimple(self.player, self.collision_list)
@@ -181,6 +191,9 @@ class Labyrinth(arcade.Window):
             
         
     def on_update(self, delta_time):
+        if self.level == 0:
+            return
+
         #update physics & entities
         self.physics.update()
         self.player.update()
@@ -193,14 +206,14 @@ class Labyrinth(arcade.Window):
             if self.key in self.sprite_list:
                 self.sprite_list.remove(self.key)
 
-        if self.lockblock and self.player.center_x >= 550 and self.player.center_x <= 600 and self.player.center_y <= 150 and self.player.center_y >= 100 and self.hasKey:#TODO das hier allgemeiner machen
+        if self.lockblock and self.player.center_x >= self.lock["x"] and self.player.center_x >= self.lock["y"] and self.player.center_y <= self.lock["x"] + 50 and self.player.center_y <= self.lock["y"] + 50 and self.hasKey:
             self.sprite_list.remove(self.lockblock)
             self.collision_list.remove(self.lockblock)
             self.hasKey = False
 
         for enemy in self.enemy_list:
             if arcade.check_for_collision(self.player, enemy):
-                print("stop") #TODO game over
+                self.level = 0
 
         if self.player.center_x >= self.goal["x"] and self.player.center_x >= self.goal["y"] and self.player.center_y <= self.goal["x"] + 50 and self.player.center_y <= self.goal["y"] + 50:
             self.level += 1
@@ -211,10 +224,18 @@ class Labyrinth(arcade.Window):
         
 
     def on_draw(self):
+        if self.level == 0:
+            arcade.draw_text("GAME OVER", 400, 300, font_size= 10)
+            return
+
         self.clear()
         self.sprite_list.draw()
-        splited_time = str(self.play_time).split(".")
-        arcade.draw_text(splited_time[0] + "." + splited_time[1][0:2], 400, 10)
+
+        if self.play_time > 1:
+            splited_time = str(self.play_time).split(".")
+            arcade.draw_text(splited_time[0] + "." + splited_time[1][0:2], 400, 10)
+        else:
+            arcade.draw_text("0", 400, 10)
 
 
 
